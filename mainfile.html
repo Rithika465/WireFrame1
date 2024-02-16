@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drag and Drop UI Elements</title>
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet">
+
+<style>
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f0f0f0;
+}
+#mobile-layout {
+  width: 300px;
+  height: 600px;
+  background-color: #080808;
+  border: 10px solid rgb(7, 7, 7);
+  border-radius: 40px;
+  /* box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23); */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+/* #screen-content {
+  flex-grow: 1;
+  background-color: #b45757;
+  padding: 10px;
+  position: relative; */
+  
+  /* overflow-y: auto; Enable vertical scrollbar */
+  /* overflow-x: auto; Enable horizontal scrollbar */
+/* } */
+#screen-content {
+  background-color: #9fd6cc; /* Red background color */
+  height: 530px; /* Height of the screen */
+  width: 100%; /* Full width */
+  position: absolute; /* Absolute positioning */
+  top: 40px; /* 40px from the top */
+  left: 0; /* Flush with the left edge */
+  right: 0;
+  padding: 10px; /* Add padding to create space for the border */
+  box-sizing: border-box; /* Include padding and border in the total width */
+  border: 10px solid #000000;/* Black border*/
+  border-radius: 6px;  /*Rounded corners*/
+  overflow-y: auto; /*Enable vertical scrollbar */
+  overflow-x: auto; /*Enable horizontal scrollbar */
+  
+}
+.sidebar {
+
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Create a 3-column grid */
+  gap: 10px; /* Space between items */
+  padding: 10px;
+  border: solid black;
+  max-width: 250px;
+  background-color: #f4f5f5e9;
+  /* margin-top: 20px; Add margin to the top */
+  
+}
+#empty-space{
+  display:block;
+  width:200px;
+}
+.draggable {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 5px;
+  background-color: #007bff;
+  color: white;
+  border-radius: 4px;
+  cursor: grab;
+  font-size: 0.75rem; /* Reduce font size */
+}
+.draggable i {
+  font-size: 20px; /* Icon size */
+  margin-bottom: 4px;
+}
+.toolbar {
+  padding: 10px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+}
+.color-option {
+  width: 20px; /* Reduce size */
+  height: 20px; /* Reduce size */
+  border-radius: 50%;
+  cursor: pointer;
+  margin-right: 5px;
+}
+/* #clear-btn {
+  margin-top: 20px;
+
+} */
+.widget {
+  position: absolute;
+  cursor: move;
+  padding: 10px;
+  /* background-color: #ffffff; */
+  /* border: solid 1px #ccc;
+  /* border-radius: 6px; */
+}
+/* Resize handle */
+/* .resizable {
+  resize: both;
+  overflow: auto;
+} */
+.resizable input[type="text"], .resizable div[contenteditable="true"] {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+}
+.radio-container {
+  display: flex;
+  align-items: center;
+}
+.checkbox-container {
+  display: flex;
+  align-items: center;
+}
+.checkbox-container input[type="checkbox"] {
+  margin-right: 5px;
+}
+.delete-option {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  /* background-color: #ff0000; */
+  color: #0b0b0b;
+  border: white;
+  border-radius: 0%;
+    cursor: pointer;
+  display: none;
+}
+.widget:hover .delete-option {
+  display:inline;
+}
+
+.resizable:hover {
+    border: 2px solid #007bff;
+    cursor: pointer;
+  }
+  .resizable {
+    position: relative;
+  }
+  .resize-handle {
+    width: 10px;
+    height: 10px;
+    background-color: #007bff;
+    position: absolute;
+  }
+  .topLeft {
+    top: -5px;
+    left: -5px;
+    cursor: nwse-resize;
+  }
+  .topRight {
+    top: -5px;
+    right: -5px;
+    cursor: nesw-resize;
+  }
+  .bottomLeft {
+    bottom: -5px;
+    left: -5px;
+    cursor: nesw-resize;
+  }
+  .bottomRight {
+    bottom: -5px;
+    right: -5px;
+    cursor: nwse-resize;
+  }
+  .resizable:hover .resize-handle {
+    display: block;
+  }
+  img:focus {
+    outline: none;
+}
+
+/* Disable resize handles */
+.resizable {
+    resize: none;
+}
+
+.image-wrapper .delete-option {
+    display: none;
+}
+
+.image-wrapper:hover .delete-option {
+    display: inline-block;
+}
+
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="draggable" draggable="true" data-type="TextField"><i class="fas fa-font"></i><span>Text Field</span></div>
+  <div class="draggable" draggable="true" data-type="Heading"><i class="fas fa-heading"></i><span>Heading</span></div>
+  <div class="draggable" draggable="true" data-type="Paragraph"><i class="fas fa-paragraph"></i><span>Paragraph</span></div>
+  <div class="draggable" draggable="true" data-type="Checkbox"><i class="fas fa-check-square"></i><span>Checkbox</span></div>
+  <div class="draggable" draggable="true" data-type="RadioButton"><i class="fas fa-dot-circle"></i><span>Radio Button</span></div>
+  <div class="draggable" draggable="true" data-type="Dropdown"><i class="fas fa-caret-square-down"></i><span>Dropdown</span></div>
+  <div class="draggable" draggable="true" data-type="Image"><i class="fas fa-image"></i><span>Image</span></div>
+  <!-- <div class="draggable" draggable="true" data-type="Paragraph"><i class="fas fa-paragraph"></i><span>Paragraph</span></div> -->
+  <div class="draggable" draggable="true" data-type="SubmitButton"><i class="fas fa-paper-plane"></i><span>Button</span></div>
+  <!-- <div class="draggable" draggable="true" data-type="SelectList"><i class="fas fa-list"></i><span>Select List</span></div> -->
+
+  <button class="draggable" id="clear-btn" onclick="clearLayout()">Clear All</button>
+</div>
+<div id="empty-space"></div>
+<div id="mobile-layout">
+  <div id="screen-content" class="resizable">
+    <!-- Dropped content will appear here -->
+  </div>
+  <!-- <div class="toolbar">
+    <div>
+      <span>Background Color:</span>
+      <span class="color-option" style="background-color: #ffffff;"></span>
+      <span class="color-option" style="background-color: #e0e0e0;"></span>
+      <span class="color-option" style="background-color: #c0c0c0;"></span>
+    </div>
+    <button id="clear-btn" onclick="clearLayout()">Clear All</button>
+  </div>  -->
+</div>
+<script>
+  const draggables = document.querySelectorAll('.draggable');
+  const dropArea = document.getElementById('screen-content');
+
+  draggables.forEach(draggable => {
+    draggable.addEventListener('click', function(event) {
+      const type = draggable.dataset.type;
+      const element = document.createElement('div');
+      element.classList.add('widget');
+      // Additional code for editable text field
+      if (type === 'TextField') {
+        const textField = document.createElement('input');
+        textField.type = 'text';
+        textField.value = 'Text';
+        textField.style.overflowY = 'auto'; // Add this line to enable vertical scrollbar
+        textField.style.maxHeight = '100%'; // Limit the height to the screen height
+        
+        element.appendChild(textField);
+      }
+      // Additional code for editable heading
+      if (type === 'Heading') {
+        const heading = document.createElement('div');
+        heading.contentEditable = true;
+        heading.textContent = 'Heading';
+        heading.style.fontSize = '24px';
+        heading.style.fontWeight = 'bold';
+        heading.style.margin = '10px 0';
+        element.appendChild(heading);
+      }
+      // Additional code for editable paragraph
+      if (type === 'Paragraph') {
+        const paragraph = document.createElement('div');
+        paragraph.contentEditable = true;
+        paragraph.textContent = 'Paragraph';
+        element.appendChild(paragraph);
+      }
+      // Additional code for submit button
+      if (type === 'SubmitButton') {
+        const submitButton = document.createElement('button');
+        submitButton.textContent = 'Button';
+        submitButton.contentEditable = true;
+        submitButton.style.padding = '5px 10px';
+        submitButton.style.background = '#007bff';
+        submitButton.style.color = '#fff';
+        submitButton.style.border = 'none';
+        submitButton.style.borderRadius = '4px';
+        element.appendChild(submitButton);
+      }
+      // Additional code for radio button with editable text
+      if (type === 'RadioButton') {
+        const radioContainer = document.createElement('div');
+        radioContainer.classList.add('radio-container');
+        const radioButton = document.createElement('input');
+        radioButton.type = 'radio';
+        const editableText = document.createElement('div');
+        editableText.contentEditable = true;
+        editableText.textContent = ' Radio Button';
+        radioContainer.appendChild(radioButton);
+        radioContainer.appendChild(editableText);
+        element.appendChild(radioContainer);
+      }
+      // Additional code for checkbox with editable text
+      if (type === 'Checkbox') {
+        const checkboxContainer = document.createElement('div');
+        checkboxContainer.classList.add('checkbox-container');
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        const editableText = document.createElement('div');
+        editableText.contentEditable = true;
+        editableText.textContent = 'Checkbox Text';
+        checkboxContainer.appendChild(checkbox);
+        checkboxContainer.appendChild(editableText);
+        element.appendChild(checkboxContainer);
+      }
+      if (type === 'Dropdown') {
+    const dropdown = document.createElement('select');
+    dropdown.classList.add('dropdown');
+
+    // Initial "Select" option
+    const initialOption = document.createElement('option');
+    initialOption.textContent = 'Select';
+    dropdown.appendChild(initialOption);
+
+    // Button to add new options
+    const addButton = document.createElement('button');
+    addButton.textContent = '+';
+    addButton.classList.add('add-option');
+    addButton.addEventListener('click', addOption);
+
+    // Append dropdown to the element
+    element.appendChild(dropdown);
+
+    // Append the add button to the element
+    element.appendChild(addButton);
+
+    // Function to add a new option
+    function addOption() {
+        const optionContent = prompt('Enter the content for the option:');
+        if (optionContent !== null && optionContent.trim() !== '') {
+            const option = document.createElement('option');
+            option.textContent = optionContent;
+            dropdown.appendChild(option);
+        }
+    }
+}
+if (type === 'Image') {
+        const imageInput = document.createElement('input');
+        imageInput.type = 'file';
+        imageInput.accept = 'image/*';
+        imageInput.addEventListener('change', handleImageUpload);
+        element.appendChild(imageInput);
+      }
+
+      dropArea.appendChild(element);
+
+      // Make the draggable elements draggable
+      makeDraggable(element);
+      makeDeletable(element);
+    });
+  });
+
+  function handleImageUpload(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.style.width = '100%';
+            img.style.height = '100%';
+            const imgWrapper = document.createElement('div');
+            imgWrapper.classList.add('resizable', 'draggable', 'image-wrapper');
+            imgWrapper.appendChild(img);
+
+            // Create delete button for the image
+            const deleteButton = document.createElement('button');
+            deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
+            deleteButton.classList.add('delete-option');
+            deleteButton.addEventListener('click', () => {
+                imgWrapper.remove();
+            });
+
+            imgWrapper.appendChild(deleteButton);
+
+            dropArea.appendChild(imgWrapper);
+            makeResizable(imgWrapper);
+            makeDraggable(imgWrapper);
+            makeDeletable(imgWrapper);
+
+            // Remove the input element after uploading the image
+            event.target.parentNode.remove();
+        }
+        reader.readAsDataURL(file);
+    }
+}
+
+
+
+
+function makeResizable(element) {
+    let originalWidth, originalHeight;
+    let startX, startY;
+    let startWidth, startHeight;
+
+    const handleTopLeft = createResizeHandle('topLeft');
+    const handleTopRight = createResizeHandle('topRight');
+    const handleBottomLeft = createResizeHandle('bottomLeft');
+    const handleBottomRight = createResizeHandle('bottomRight');
+
+    element.appendChild(handleTopLeft);
+    element.appendChild(handleTopRight);
+    element.appendChild(handleBottomLeft);
+    element.appendChild(handleBottomRight);
+
+    handleTopLeft.addEventListener('mousedown', initResize);
+    handleTopRight.addEventListener('mousedown', initResize);
+    handleBottomLeft.addEventListener('mousedown', initResize);
+    handleBottomRight.addEventListener('mousedown', initResize);
+
+    function createResizeHandle(position) {
+        const handle = document.createElement('div');
+        handle.classList.add('resize-handle', position);
+        return handle;
+    }
+
+    function initResize(e) {
+        startX = e.clientX;
+        startY = e.clientY;
+        originalWidth = element.offsetWidth;
+        originalHeight = element.offsetHeight;
+        startWidth = originalWidth;
+        startHeight = originalHeight;
+        document.addEventListener('mousemove', doResize);
+        document.addEventListener('mouseup', stopResize);
+    }
+
+    function doResize(e) {
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+
+        const newWidth = startWidth + dx;
+        const newHeight = startHeight + dy;
+
+        const zoomFactorWidth = newWidth / originalWidth;
+        const zoomFactorHeight = newHeight / originalHeight;
+
+        if (handleTopLeft.classList.contains('topLeft')) {
+            element.style.width = newWidth + 'px';
+            element.style.height = newHeight + 'px';
+            element.style.left = originalWidth - element.offsetWidth + 'px';
+            element.style.top = originalHeight - element.offsetHeight + 'px';
+        } else if (handleTopRight.classList.contains('topRight')) {
+            element.style.width = newWidth + 'px';
+            element.style.height = newHeight + 'px';
+            element.style.top = originalHeight - element.offsetHeight + 'px';
+        } else if (handleBottomLeft.classList.contains('bottomLeft')) {
+            element.style.width = newWidth + 'px';
+            element.style.height = newHeight + 'px';
+            element.style.left = originalWidth - element.offsetWidth + 'px';
+        } else if (handleBottomRight.classList.contains('bottomRight')) {
+            element.style.width = newWidth + 'px';
+            element.style.height = newHeight + 'px';
+        }
+    }
+
+    function stopResize() {
+        document.removeEventListener('mousemove', doResize);
+        document.removeEventListener('mouseup', stopResize);
+    }
+}
+document.addEventListener('DOMContentLoaded', function() {
+    const dropArea = document.getElementById('screen-content');
+
+    dropArea.addEventListener('dragover', function(event) {
+        event.preventDefault();
+    });
+
+    dropArea.addEventListener('drop', function(event) {
+        event.preventDefault();
+        const file = event.dataTransfer.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.width = '100%';
+                img.style.height = 'auto';
+                const imgWrapper = document.createElement('div');
+                imgWrapper.classList.add('resizable');
+                imgWrapper.appendChild(img);
+                dropArea.appendChild(imgWrapper);
+                makeResizable(imgWrapper);
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+});
+document.addEventListener('DOMContentLoaded', function() {
+    const dropArea = document.getElementById('screen-content');
+
+    dropArea.addEventListener('dragover', function(event) {
+        event.preventDefault();
+    });
+
+    dropArea.addEventListener('drop', function(event) {
+        event.preventDefault();
+        const file = event.dataTransfer.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.width = '100%';
+                img.style.height = 'auto';
+                const imgWrapper = document.createElement('div');
+                imgWrapper.classList.add('resizable');
+                imgWrapper.appendChild(img);
+                dropArea.appendChild(imgWrapper);
+                makeResizable(imgWrapper);
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+});
+
+  function makeDraggable(element) {
+    let initialX;
+    let initialY;
+    let xOffset = 0;
+    let yOffset = 0;
+    let isDragging = false;
+
+    element.addEventListener('mousedown', dragStart);
+
+    function dragStart(e) {
+      isDragging = true;
+      initialX = e.clientX - xOffset;
+      initialY = e.clientY - yOffset;
+      document.addEventListener('mousemove', drag);
+      document.addEventListener('mouseup', dragEnd);
+    }
+
+    function drag(e) {
+      if (isDragging) {
+        e.preventDefault();
+        xOffset = e.clientX - initialX;
+        yOffset = e.clientY - initialY;
+        setTranslate(xOffset, yOffset, element);
+      }
+    }
+
+    function dragEnd() {
+      initialX = xOffset;
+      initialY = yOffset;
+      isDragging = false;
+      document.removeEventListener('mousemove', drag);
+      document.removeEventListener('mouseup', dragEnd);
+    }
+
+    function setTranslate(xPos, yPos, el) {
+      el.style.transform = `translate(${xPos}px, ${yPos}px)`;
+    }
+  }
+
+  function makeDeletable(element) {
+    const deleteButton = document.createElement('button');
+    deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
+    deleteButton.classList.add('delete-option');
+    element.appendChild(deleteButton);
+    deleteButton.addEventListener('click', () => {
+      element.remove();
+    });
+  }
+
+  dropArea.addEventListener('dragover', function(event) {
+    event.preventDefault();
+  });
+
+  dropArea.addEventListener('drop', function(event) {
+    event.preventDefault();
+    if (!draggedElement) return;
+    const mouseX = event.clientX;
+    const mouseY = event.clientY;
+    const boundingRect = dropArea.getBoundingClientRect();
+    const x = mouseX - boundingRect.left;
+    const y = mouseY - boundingRect.top;
+    const element = document.createElement('div');
+    element.classList.add('widget');
+    element.textContent = draggedElement.dataset.type;
+    element.style.left = x + 'px';
+    element.style.top = y + 'px';
+    dropArea.appendChild(element);
+    draggedElement = null;
+    makeDeletable(element);
+  });
+
+  function clearLayout() {
+    dropArea.innerHTML = '';
+  }
+
+  // Resize textarea
+  // const resizable = document.querySelector('.resizable');
+  const textarea = resizable.querySelector('textarea');
+  textarea.addEventListener('input', function() {
+    // Auto-expand textarea as content grows
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
+  });
+</script>
+</body>
+</html>
